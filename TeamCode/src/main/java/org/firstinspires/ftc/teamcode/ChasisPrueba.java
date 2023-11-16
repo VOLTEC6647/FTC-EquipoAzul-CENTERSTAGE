@@ -7,6 +7,11 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Blinker;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.arcrobotics.ftclib.geometry.Pose2d;
+import com.arcrobotics.ftclib.geometry.Rotation2d;
+import com.arcrobotics.ftclib.geometry.Translation2d;
+import com.arcrobotics.ftclib.kinematics.wpilibkinematics.MecanumDriveKinematics;
+import com.arcrobotics.ftclib.kinematics.wpilibkinematics.MecanumDriveOdometry;
 
 @TeleOp
 
@@ -30,7 +35,7 @@ public class ChasisPrueba extends LinearOpMode {
         backRightMotor = hardwareMap.get(DcMotor.class, "BackRightMotor");
         frontLeftMotor = hardwareMap.get(DcMotor.class, "FrontLeftMotor");
         frontRightMotor = hardwareMap.get(DcMotor.class, "FrontRightMotor");
-        intakeMotor = hardwareMap.get(DcMotor.class, "IntakeMotor");
+        //intakeMotor = hardwareMap.get(DcMotor.class, "IntakeMotor");
         rightArm = hardwareMap.get(Servo.class, "RightArm");
         leftArm = hardwareMap.get(Servo.class, "LeftArm");
         touch = hardwareMap.get(TouchSensor.class, "TouchSensor");
@@ -80,11 +85,11 @@ public class ChasisPrueba extends LinearOpMode {
                 r = 0;
             }
 
-            if (touch.isPressed()) {
+            /*if (touch.isPressed()) {
                 pressed = "The sensor is being pressed";
             } else {
                 pressed = "The sensor not being pressed";
-            }
+            }*/
 
 
             //For this type of servo just give the input of
@@ -137,7 +142,33 @@ public class ChasisPrueba extends LinearOpMode {
             frontRightMotor.setPower(frontRightPower * speed);
             backLeftMotor.setPower(backLeftPower * speed);
             backRightMotor.setPower(backRightPower * speed);
-            intakeMotor.setPower(intakePower);
+            //intakeMotor.setPower(intakePower);
+
+            // Locations of the wheels relative to the robot center.
+            Translation2d m_frontLeftLocation =
+                    new Translation2d(0.381, 0.381);
+            Translation2d m_frontRightLocation =
+                    new Translation2d(0.381, -0.381);
+            Translation2d m_backLeftLocation =
+                    new Translation2d(-0.381, 0.381);
+            Translation2d m_backRightLocation =
+                    new Translation2d(-0.381, -0.381);
+
+            // Creating my kinematics object using the wheel locations.
+            MecanumDriveKinematics m_kinematics = new MecanumDriveKinematics
+                    (
+                            m_frontLeftLocation, m_frontRightLocation,
+                            m_backLeftLocation, m_backRightLocation
+                    );
+
+            // Creating my odometry object from the kinematics object. Here,
+            // our starting pose is 5 meters along the long end of the field and in the
+            // center of the field along the short end, facing forward.
+            MecanumDriveOdometry m_odometry = new MecanumDriveOdometry
+                    (
+                            m_kinematics, new Rotation2d(0,0),
+                            new Pose2d(5.0, 13.5, new Rotation2d())
+                    );
 
             telemetry.addData("Status", "Initialized");
             telemetry.addData("Status", "Run Time: " + getRuntime());
