@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -13,9 +14,13 @@ import com.arcrobotics.ftclib.geometry.Translation2d;
 import com.arcrobotics.ftclib.kinematics.wpilibkinematics.MecanumDriveKinematics;
 import com.arcrobotics.ftclib.kinematics.wpilibkinematics.MecanumDriveOdometry;
 
+import android.util.Log;
+import com.qualcomm.hardware.kauailabs.NavxMicroNavigationSensor;
+import com.kauailabs.navx.ftc.AHRS;
+import com.kauailabs.navx.ftc.navXPIDController;
 @TeleOp
 
-public class ChasisPrueba extends LinearOpMode {
+public class ControlTest extends LinearOpMode {
     private DcMotor backLeftMotor;
     private DcMotor backRightMotor;
     private DcMotor frontLeftMotor;
@@ -24,9 +29,11 @@ public class ChasisPrueba extends LinearOpMode {
     private Blinker control_hub;
     private Servo rightArm;
     private Servo leftArm;
+    //private CRServo crtest;
+    private AHRS navx_device;
+    private navXPIDController yawPIDController;
     TouchSensor touch;
     ColorSensor color;
-
 
     @Override
 
@@ -40,7 +47,6 @@ public class ChasisPrueba extends LinearOpMode {
         leftArm = hardwareMap.get(Servo.class, "LeftArm");
         touch = hardwareMap.get(TouchSensor.class, "TouchSensor");
         color = hardwareMap.get(ColorSensor.class, "ColorSensor");
-
 
         double x;
         double y;
@@ -58,6 +64,7 @@ public class ChasisPrueba extends LinearOpMode {
         double buttonLT;
         boolean rightBumper;
         String pressed;
+        double runtime;
 
         waitForStart();
         resetRuntime();
@@ -66,8 +73,8 @@ public class ChasisPrueba extends LinearOpMode {
             x = this.gamepad1.left_stick_x;
             y = this.gamepad1.left_stick_y;
             r = this.gamepad1.right_stick_x;
-            theta = Math.atan2(y, x);
-            power = Math.hypot(x, y);
+            theta = Math.atan2(r, x);
+            power = Math.hypot(x, r);
             sin = Math.sin(theta - Math.PI / 4);
             cos = Math.cos(theta - Math.PI / 4);
             max = Math.max(Math.abs(sin), Math.abs(cos));
@@ -76,77 +83,20 @@ public class ChasisPrueba extends LinearOpMode {
             buttonRT = this.gamepad1.right_trigger;
             buttonLT = this.gamepad1.left_trigger;
             rightBumper = this.gamepad1.right_bumper;
+            runtime = getRuntime();
 
-            if(x <= 0.1) {
-                x = 0;
-            } else if(y <= 0.1) {
-                y = 0;
-            } else if (r <= 0.1) {
-                r = 0;
-            }
-
-            //For this type of servo just give the input of
-            //a desired position such as line 1, 2, or 3 in the backdrop
-
-            if (buttonRT == 1) {
-                rightArm.setPosition(1);
-                leftArm.setPosition(1);
-            }
-            if (buttonLT == 1) {
-                rightArm.setPosition(0);
-                leftArm.setPosition(0);
-            }
-
-            if (buttonA) {
-                valorA++;
-                sleep(300);
-            }
-            if (valorA > 1) {
-                valorA = 0;
-            }
-
-            intakePower = valorA;
-
-            if (rightBumper) {
-                speed = 0.5;
-            } else {
-                speed = 1;
-            }
 
             double frontLeftPower;
-            double frontRightPower;
             double backLeftPower;
+            double frontRightPower;
             double backRightPower;
 
+            frontLeftMotor.setPower(y);
+            frontRightMotor.setPower(y);
+            backLeftMotor.setPower(-y);
+            backRightMotor.setPower(y);
 
 
-            frontLeftPower = power * cos / max + r;
-            frontRightPower = power * sin / max - r;
-            backLeftPower = power * sin / max + r;
-            backRightPower = power * cos / max - r;
-
-
-            if ((power + Math.abs(r)) > 1) {
-                frontLeftPower /= power + r;
-                frontRightPower /= power + r;
-                backRightPower /= power + r;
-                backLeftPower /= power + r;
-            }
-
-
-            frontLeftMotor.setPower(frontLeftPower * speed);
-            frontRightMotor.setPower(frontRightPower * speed);
-            backLeftMotor.setPower(backLeftPower * speed);
-            backRightMotor.setPower(backRightPower * speed);
-            //intakeMotor.setPower(intakePower);
-
-            telemetry.addData("Status", "Initialized");
-            telemetry.addData("Status", "Run Time: " + getRuntime());
-            /*telemetry.addData("Pressed", pressed);
-            telemetry.addData("Red", color.red());
-            telemetry.addData("Blue", color.blue());
-            telemetry.addData("Green", color.green());*/
-            telemetry.update();
         }
 
     }
