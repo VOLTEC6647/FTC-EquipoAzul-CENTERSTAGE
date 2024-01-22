@@ -4,11 +4,13 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Blinker;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Gamepad;
 //import com.qualcomm.robotcore.
 //import com.qualcomm.robotcore.hardware.IMU;
 
 
 import org.firstinspires.ftc.teamcode.subsystems.ChassisSubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.ElevatorSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.GyroscopeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.PivotSubsystem;
 
@@ -22,6 +24,9 @@ public class TeleOp_23481 extends LinearOpMode {
     public double gyr;
 
     public ChassisSubsystem chassis;
+
+    public static Gamepad controller1;
+    public static Gamepad controller2;
 
 
 
@@ -75,17 +80,27 @@ public class TeleOp_23481 extends LinearOpMode {
             speed=baseSpeed;
         }
 
-//        if(this.gamepad1.x){
-//            if(this.gamepad1.back){
-//                intake.setPower(-1);
-//            }else {
-//                intake.setPower(1);
-//            }
-//        }else{
-//            intake.setPower(0);
-//        }
 
 
+    }
+
+    void ElevatorMethods(ElevatorSubsystem elevator){
+
+
+        elevator.getPosition(telemetry);
+        if(!controller2.start) {
+
+            if(Math.abs(controller2.right_stick_y)>0.3) {
+                elevator.DebugSpeed = Math.abs(controller2.right_stick_y);
+                if (controller2.right_stick_y > 0.3) {
+                    elevator.goUp();
+                } else if (controller2.right_stick_y < -0.3) {
+                    elevator.goDown();
+                }
+            }else {
+                elevator.stop();
+            }
+        }
     }
 
     void PivotMethods (PivotSubsystem pivot) {
@@ -117,7 +132,7 @@ public class TeleOp_23481 extends LinearOpMode {
         /////////////////////////////
         ChassisSubsystem chassis=ChassisSubsystem.getInstance(hardwareMap,telemetry);
         PivotSubsystem pivot = PivotSubsystem.getInstance(hardwareMap, telemetry);
-//        ElevatorSubsystem elevator = ElevatorSubsystem.getInstance(hardwareMap);
+        ElevatorSubsystem elevator = ElevatorSubsystem.getInstance(hardwareMap);
         //Odometry odometry = Odometry.getInstance(hardwareMap,chassis);
         GyroscopeSubsystem gyroscope = GyroscopeSubsystem.getInstance(hardwareMap);
         //orientation=imu.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
@@ -136,8 +151,7 @@ public class TeleOp_23481 extends LinearOpMode {
 
             ChassisMethods(chassis,gyroscope);
             PivotMethods(pivot);
-
-//            ElevatorMethods(elevator);
+            ElevatorMethods(elevator);
 
             telemetry.update();
 
